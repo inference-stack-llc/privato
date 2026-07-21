@@ -1,5 +1,6 @@
+import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Check, CircleDot, LockKeyhole, Sparkles } from "lucide-react";
+import { ArrowRight, Check, Sparkles } from "lucide-react";
 import { BrandLockup } from "@/components/brand-lockup";
 
 export default function EntryPage() {
@@ -14,14 +15,16 @@ export default function EntryPage() {
           <Link href="/home" className="primary-button entry-cta">Enter demo household <ArrowRight size={18} /></Link>
           <div className="entry-proof"><span><Check size={14} /> Synthetic demo data</span><span><Check size={14} /> Permission-aware AI</span></div>
         </div>
-        <div className="entry-visual" aria-label="Privato trust circles preview">
-          <div className="orb orb-outer"><span>Outer</span>
-            <div className="orb orb-inner"><span>Inner</span>
-              <div className="orb orb-core"><LockKeyhole size={26} /><strong>Core</strong></div>
-            </div>
-          </div>
-          <div className="visual-card visual-card-one"><CircleDot size={18} /><span><strong>5 trusted people</strong><small>organized by relationship</small></span></div>
-          <div className="visual-card visual-card-two"><LockKeyhole size={18} /><span><strong>Private stays private</strong><small>authorization before retrieval</small></span></div>
+        <div className="entry-visual">
+          <Image
+            className="entry-hero-image"
+            src="/privato-home-hero.png"
+            alt="Privato organizing trusted circles and sharing a family insurance card when it is needed"
+            width={3344}
+            height={1882}
+            priority
+            sizes="(max-width: 980px) calc(100vw - 40px), 52vw"
+          />
         </div>
       </section>
       <footer className="entry-footer"><span>Digital vaults organize files.</span><strong>Privato organizes trust.</strong></footer>
