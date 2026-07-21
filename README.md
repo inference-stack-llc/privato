@@ -348,6 +348,56 @@ Privato was conceived and built for OpenAI Build Week under an unusually compres
 
 Codex served as the implementation partner across product architecture, domain boundaries, centralized authorization, permission-filtered retrieval, OpenAI integration, runtime controls, adversarial tests, responsive implementation, and technical documentation.
 
+### Developer context
+
+Privato did not begin as an undeveloped one-sentence prompt. It was conceived and architected by Matt Vegas, an experienced software engineer and enterprise architect with decades of work across full-stack development, distributed systems, cloud architecture, security-sensitive applications, and production AI systems. Matt is also an incoming Lead AI Software Engineer at Streamline Healthcare Solutions. That background shaped the specificity of the problem definition, risk analysis, and acceptance criteria supplied to Codex; it does not make an implementation automatically secure.
+
+The initial inputs were architectural briefs rather than generic feature requests. They defined the product thesis and users; trust-circle domain model; authorization and non-disclosure invariants; module and adapter boundaries; strict TypeScript; Next.js App Router and React Server Component conventions; PostgreSQL and Drizzle boundaries; Zod validation; the OpenAI Responses API and Structured Outputs; runtime resilience and Vercel/serverless constraints; adversarial scenarios; responsive expectations; prototype limitations; and completion criteria.
+
+### Human direction, Codex execution
+
+The working model resembled a senior architect collaborating with an implementation agent. Matt retained ownership of the problem, product thesis, domain model, risk posture, system boundaries, architecture, security invariants, tradeoffs, and acceptance decisions. Codex translated that direction into repository structure, production-shaped TypeScript, responsive UI, server use cases, adapters, schemas, tests, documentation, and deployment-ready changes.
+
+Codex was not asked to invent authorization or decide what a household member should see. It received explicit constraints and was repeatedly asked to prove the implementation honored them. The loop was architectural brief → implementation → repository inspection → tests → failure analysis → correction → verification. This was neither unaudited one-shot generation nor manual development with occasional autocomplete; it was sustained, repository-aware collaboration.
+
+### Where Codex accelerated the build
+
+Codex compressed work across the engineering lifecycle. It translated trust circles into centralized policy used by dashboard and vault filtering, direct detail reads, pasted URLs, sensitive-field reveals, Ask retrieval, and citation validation. It implemented the authorization-first Ask pipeline, bounded evidence, strict Structured Output validation, the OpenAI gateway, and protected behavior for timeouts, jittered retries, circuit breaking, correction, and provider failures.
+
+The same context extended into responsive desktop and mobile UI, the synthetic Morgan household, PostgreSQL and Drizzle modeling, encrypted seeds, replaceable repository boundaries, adversarial tests, and technical documentation. Codex could trace an invariant through UI, domain, retrieval, AI context, validation, and tests instead of treating each file as an isolated task. Image generation, visual ideation, submission copy, and selected feature discussions also occurred in ChatGPT; most repository engineering took place inside Codex.
+
+### Key decisions retained by the developer
+
+| Decision | Human rationale | Codex contribution |
+| --- | --- | --- |
+| Authorize before retrieval and model invocation | Access must be resolved deterministically before sensitive information can move farther through the system. | Implemented and tested the identity → authorization → retrieval → AI sequence across server paths. |
+| Never let the model determine access | Probabilistic output is not an authorization mechanism. | Kept policy in `src/modules/authorization/policy.ts` and constrained AI to already-authorized evidence. |
+| Use one neutral no-answer path | Unauthorized, nonexistent, irrelevant, and guessed resources should not become an existence oracle. | Implemented indistinguishable protected failures and adversarial coverage. |
+| Keep restricted evidence out of model context | Post-generation filtering cannot undo disclosure to a provider. | Built authorized retrieval and bounded evidence construction before the gateway call. |
+| Validate and reauthorize citations | A fluent answer must not cite invented or newly restricted material. | Added structured-output validation, evidence-ID checks, and authorization rechecks. |
+| Skip the model when no authorized evidence exists | No evidence means there is nothing safe to ground an answer in. | Implemented the deterministic no-evidence response and tests that assert no model invocation. |
+| Keep the demo deterministic and infrastructure-independent | Build Week needed a reliable synthetic path without misrepresenting prototype storage as production persistence. | Preserved the demo repository while modeling credible PostgreSQL, encryption, and adapter boundaries. |
+| Avoid unjustified infrastructure and feature breadth | Embeddings, a vector database, autonomous agent loops, Redis, queues, and incomplete features would add risk without improving this corpus or golden path. | Kept the implementation a narrow vertical slice and documented the omitted capabilities explicitly. |
+| Fail safely during runtime AI faults | Timeouts, malformed outputs, and provider failures must not produce fabricated household answers. | Implemented bounded retries, correction, circuit state, validation, and protected failure behavior. |
+
+### Debugging, verification, and deployment
+
+Debugging remained interactive and evidence-driven. Matt supplied observed behavior, the expected invariant, and architectural context. Codex inspected cross-module call paths, formed root-cause hypotheses, changed the implementation, strengthened regression coverage, ran checks, and iterated until the invariant was restored. Covered categories include authorization leakage, identity changes, immediate revocation, fabricated citations, prompt injection, concurrent access changes, runtime failures, and serverless session behavior.
+
+Codex worked through the local engineering environment rather than stopping at suggestions. It inspected Git state, coordinated edits, interpreted failures, and ran `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm build`, and `pnpm exec drizzle-kit check`. It also used available Vercel tooling to take verified changes through deployment. Combining reasoning, editing, command execution, and failure interpretation reduced assistant-to-developer handoff friction.
+
+### GPT-5.6 and Codex responsibilities
+
+GPT-5.6, operating through Codex, was the development-time reasoning and engineering model. It processed long architectural prompts, inspected repository context, planned and produced code, diagnosed failures, examined security edge cases, and developed coverage. Codex supplied the repository-aware environment for file inspection, coordinated edits, terminal and tool use, verification, failure observation, and correction. ChatGPT supported portions of product ideation, visual and image generation, communication materials, and selected feature discussions.
+
+That workflow is distinct from Privato's runtime inference. The application uses the OpenAI server SDK, Responses API, and Structured Outputs for configured extraction and grounded answers. The runtime model remains configurable and defaults to `gpt-4.1-mini`. Regardless of model, deterministic identity, authorization, retrieval, evidence, and citation boundaries govern what reaches inference and what can be returned.
+
+### What the collaboration demonstrated
+
+The strongest result was not simply faster code production. Codex accepted interconnected architectural instructions, preserved repository constraints, reasoned across UI, domain policy, security, persistence, AI integration, reliability, and deployment, converted design intent into code, participated in evidence-driven debugging, and repeatedly checked its work through the project toolchain.
+
+Codex was most effective with precise human intent, explicit invariants, inspectable acceptance criteria, and permission to test its output. Matt was impressed by how effectively it handled large architectural prompts and local workflows without reducing Privato to generic scaffolding. The experience reinforced the need for engineering judgment while showing how much of the implementation and verification loop a well-directed agent can responsibly accelerate.
+
 OpenAI powers the configured document-extraction path and grounded Ask Privato answers through the server-side Responses API and Structured Outputs. OpenAI generates within Privato's deterministic evidence boundary; it does not authenticate users, decide circle access, retrieve unrestricted resources, or approve sharing.
 
 This repository is an independent Build Week submission. It is not an official OpenAI application and does not imply OpenAI endorsement or a contest result.
