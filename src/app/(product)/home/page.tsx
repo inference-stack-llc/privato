@@ -1,15 +1,13 @@
 import Link from "next/link";
 import { ArrowRight, CalendarClock, CircleDot, FileCheck2, MessageCircleMore, Plus, ShieldCheck, Sparkles } from "lucide-react";
 import { ResourceCard } from "@/components/resource-card";
-import { getDemoSnapshot } from "@/modules/demo/demo-store";
-import { getCurrentPrincipal } from "@/modules/identity/session";
+import { getCurrentSessionContext } from "@/modules/identity/session";
 import { listAuthorizedResources } from "@/modules/resources/service";
 
 export const metadata = { title: "Household" };
 
 export default async function HomePage() {
-  const principal = await getCurrentPrincipal();
-  const snapshot = getDemoSnapshot();
+  const { principal, snapshot } = await getCurrentSessionContext();
   const resources = listAuthorizedResources(principal, snapshot);
   const currentMember = snapshot.members.find((member) => member.id === principal.memberId)!;
   const categories = new Set(resources.map((resource) => resource.category)).size;

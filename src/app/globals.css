@@ -243,6 +243,11 @@ button:disabled { opacity: .55; cursor: not-allowed; transform: none !important;
 .trust-rule svg { flex: none; color: var(--maroon); }
 .trust-rule p { margin: 0; font-size: 10px; line-height: 1.45; }
 .trust-rule strong { color: var(--ink); }
+.circle-management-notice { display: flex; align-items: flex-start; gap: 11px; margin: -8px 0 18px; padding: 13px 15px; border: 1px solid #e6d59d; border-radius: 12px; color: var(--gold-text); background: #fbf5df; }
+.circle-management-notice svg { flex: none; margin-top: 1px; }
+.circle-management-notice div { display: flex; flex-direction: column; gap: 3px; }
+.circle-management-notice strong { font-size: 11px; }
+.circle-management-notice span { color: var(--muted); font-size: 10px; line-height: 1.4; }
 .circle-lists { display: flex; flex-direction: column; gap: 14px; }
 .circle-list-card { padding: 19px; }
 .circle-list-title { display: grid; grid-template-columns: auto 1fr; gap: 12px; }
@@ -260,6 +265,7 @@ button:disabled { opacity: .55; cursor: not-allowed; transform: none !important;
 .circle-member strong { font-size: 11px; }
 .circle-member small { color: var(--muted); font-size: 9px; }
 .circle-member button { display: inline-flex; align-items: center; gap: 3px; padding: 7px 6px; border: 0; color: var(--maroon); background: transparent; cursor: pointer; font-size: 9px; font-weight: 660; }
+.circle-member button:disabled { color: var(--faint); }
 .dialog-backdrop { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 20px; background: rgb(36 27 32 / .5); backdrop-filter: blur(6px); animation: popIn .16s ease; }
 .dialog { position: relative; width: min(100%, 520px); max-height: calc(100vh - 40px); overflow: auto; padding: 30px; border: 1px solid rgb(255 255 255 / .6); border-radius: 20px; background: var(--surface); box-shadow: 0 30px 80px rgb(36 27 32 / .25); }
 .dialog-close { position: absolute; right: 18px; top: 18px; width: 34px; height: 34px; display: grid; place-items: center; border: 0; border-radius: 50%; color: var(--muted); background: #f0ece9; cursor: pointer; }

@@ -6,23 +6,23 @@ import { MemberAvatar } from "@/components/member-avatar";
 import { SensitiveValue } from "@/components/sensitive-value";
 import { categoryLabels, visibilityLabels } from "@/modules/core/domain";
 import { canAccessResource, effectiveAudience } from "@/modules/authorization/policy";
-import { findDemoResource, getDemoSnapshot, recordDemoAudit } from "@/modules/demo/demo-store";
-import { getCurrentPrincipal } from "@/modules/identity/session";
+import { recordDemoAudit } from "@/modules/demo/demo-store";
+import { getCurrentSessionContext } from "@/modules/identity/session";
 import { getAuthorizedResource } from "@/modules/resources/service";
 
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: { params: Promise<{ resourceId: string }> }) {
   const { resourceId } = await params;
-  const principal = await getCurrentPrincipal();
-  const resource = findDemoResource(resourceId);
+  const { principal, snapshot } = await getCurrentSessionContext();
+  const resource = snapshot.resources.find((item) => item.id === resourceId);
   return { title: resource && canAccessResource(principal, resource) ? resource.name : "Resource unavailable" };
 }
 
 export default async function ResourceDetailPage({ params }: { params: Promise<{ resourceId: string }> }) {
   const { resourceId } = await params;
-  const principal = await getCurrentPrincipal();
-  const candidate = findDemoResource(resourceId);
+  const { principal, snapshot } = await getCurrentSessionContext();
+  const candidate = snapshot.resources.find((item) => item.id === resourceId);
   if (!candidate) notFound();
   let resource;
   try {
@@ -30,7 +30,6 @@ export default async function ResourceDetailPage({ params }: { params: Promise<{
   } catch {
     notFound();
   }
-  const snapshot = getDemoSnapshot();
   const owner = snapshot.members.find((member) => member.id === resource.ownerMemberId)!;
   const audience = effectiveAudience(resource, snapshot.members);
   const audits = snapshot.auditEvents.filter((event) => event.resourceId === resource.id).slice(0, 5);

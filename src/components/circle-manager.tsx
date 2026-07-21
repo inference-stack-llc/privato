@@ -17,7 +17,17 @@ function accessibleIds(member: Member, resources: Resource[]): Set<string> {
   return new Set(resources.filter((resource) => canAccessResource({ householdId: member.householdId, memberId: member.id, circle: member.circle }, resource)).map((resource) => resource.id));
 }
 
-export function CircleManager({ initialMembers, resources, actorMemberId }: { initialMembers: Member[]; resources: Resource[]; actorMemberId: string }) {
+export function CircleManager({
+  initialMembers,
+  resources,
+  actorMemberId,
+  canManage,
+}: {
+  initialMembers: Member[];
+  resources: Resource[];
+  actorMemberId: string;
+  canManage: boolean;
+}) {
   const [members, setMembers] = useState(initialMembers);
   const [selected, setSelected] = useState<Member>();
   const [target, setTarget] = useState<CircleType>("INNER");
@@ -38,6 +48,7 @@ export function CircleManager({ initialMembers, resources, actorMemberId }: { in
   }, [resources, selected, target]);
 
   function beginMove(member: Member) {
+    if (!canManage) return;
     setSelected(member);
     setTarget(member.circle === "OUTER" ? "INNER" : member.circle === "INNER" ? "CORE" : "INNER");
     setError(undefined);
@@ -52,8 +63,9 @@ export function CircleManager({ initialMembers, resources, actorMemberId }: { in
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ memberId: selected.id, circle: target }),
     });
+    const payload = await response.json().catch(() => null) as { error?: string } | null;
     if (!response.ok) {
-      setError("The circle change could not be saved. Try again.");
+      setError(payload?.error ?? "The circle change could not be saved. Try again.");
       setPending(false);
       return;
     }
@@ -69,6 +81,15 @@ export function CircleManager({ initialMembers, resources, actorMemberId }: { in
   return (
     <>
       {success && <div className="toast" role="status"><Check size={16} />{success}<button type="button" aria-label="Dismiss message" onClick={() => setSuccess(undefined)}><X size={14} /></button></div>}
+      {!canManage && (
+        <div className="circle-management-notice" role="status">
+          <LockKeyhole size={18} />
+          <div>
+            <strong>Circle changes require a Core identity.</strong>
+            <span>Use “Viewing as” to switch back to Alex or Maya, then move Sam.</span>
+          </div>
+        </div>
+      )}
       <div className="circles-layout">
         <section className="circle-visual-panel surface-card" aria-labelledby="trust-map-title">
           <div className="circle-panel-heading"><div><span className="page-kicker">Trust map</span><h2 id="trust-map-title">Closer means more trusted.</h2></div><span className="inheritance-pill"><ShieldCheck size={14} /> Access inherits outward</span></div>
@@ -99,7 +120,12 @@ export function CircleManager({ initialMembers, resources, actorMemberId }: { in
                   <div className="circle-member" key={member.id}>
                     <MemberAvatar member={member} />
                     <span><strong>{member.displayName}</strong><small>{member.relationshipLabel}{member.id === actorMemberId ? " · Current view" : ""}</small></span>
-                    <button type="button" onClick={() => beginMove(member)} aria-label={`Move ${member.displayName} to another circle`}>Move <ChevronRight size={14} /></button>
+                    <button
+                      type="button"
+                      disabled={!canManage}
+                      onClick={() => beginMove(member)}
+                      aria-label={canManage ? `Move ${member.displayName} to another circle` : `Switch to a Core identity to move ${member.displayName}`}
+                    >Move <ChevronRight size={14} /></button>
                   </div>
                 ))}
               </div>

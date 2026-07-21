@@ -1,13 +1,11 @@
 import { AskPrivato } from "@/components/ask-privato";
-import { getDemoSnapshot } from "@/modules/demo/demo-store";
-import { getCurrentPrincipal } from "@/modules/identity/session";
+import { getCurrentSessionContext } from "@/modules/identity/session";
 import { listAuthorizedResources } from "@/modules/resources/service";
 
 export const metadata = { title: "Ask Privato" };
 
 export default async function AskPage() {
-  const principal = await getCurrentPrincipal();
-  const snapshot = getDemoSnapshot();
+  const { principal, snapshot } = await getCurrentSessionContext();
   const resources = listAuthorizedResources(principal, snapshot);
   return (
     <>

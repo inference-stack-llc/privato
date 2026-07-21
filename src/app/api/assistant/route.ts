@@ -7,8 +7,7 @@ import { DemoAiRunRepository, DemoAuditEventAdapter } from "@/modules/assistant/
 import { AuthorizedStructuredLexicalRetriever } from "@/modules/assistant/retrieval";
 import { AskPrivatoService } from "@/modules/assistant/service";
 import { ASK_VALIDATION_MESSAGE } from "@/modules/assistant/types";
-import { getDemoSnapshot } from "@/modules/demo/demo-store";
-import { getCurrentPrincipal } from "@/modules/identity/session";
+import { getCurrentSessionContext } from "@/modules/identity/session";
 import { DemoAuthorizedResourceRepository } from "@/modules/resources/authorized-repository";
 
 export const dynamic = "force-dynamic";
@@ -35,7 +34,7 @@ function isSameOriginJson(request: Request): boolean {
 export async function POST(request: Request) {
   if (!isSameOriginJson(request)) return privateJson({ error: "This request is not available." }, 403);
 
-  const principal = await getCurrentPrincipal();
+  const { principal, snapshot } = await getCurrentSessionContext();
   const contentLength = Number(request.headers.get("content-length") ?? 0);
   if (Number.isFinite(contentLength) && contentLength > 4_096) {
     return privateJson({ error: ASK_VALIDATION_MESSAGE }, 400);
@@ -52,7 +51,7 @@ export async function POST(request: Request) {
   if (!parsed.success) return privateJson({ error: ASK_VALIDATION_MESSAGE }, 400);
 
   const correlationId = randomUUID();
-  const repository = new DemoAuthorizedResourceRepository(getDemoSnapshot);
+  const repository = new DemoAuthorizedResourceRepository(() => snapshot);
   const gateway = createAskAiGateway();
   const service = new AskPrivatoService({
     repository,

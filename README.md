@@ -195,7 +195,7 @@ The standard suite uses deterministic gateway fakes, so security behavior is rep
 | Identity isolation | An Alex result does not appear in the next Sam response |
 | Runtime failure | Hard timeout, transient retry, validation failure, and circuit-open behavior fail safely |
 
-Current result: **53 tests passing across 8 files** with `pnpm test`. This is focused unit and security coverage; the repository does not claim an automated browser end-to-end suite. The full matrix and live-provider acceptance sequence are documented in [Ask Privato evaluations](docs/ask-privato-evals.md).
+Current result: **56 tests passing across 9 files** with `pnpm test`. This is focused unit and security coverage; the repository does not claim an automated browser end-to-end suite. The full matrix and live-provider acceptance sequence are documented in [Ask Privato evaluations](docs/ask-privato-evals.md).
 
 ## Technical architecture
 
@@ -210,12 +210,12 @@ src/modules/resources/      authorized resource boundaries
 src/modules/encryption/     versioned AES-256-GCM primitives
 src/modules/assistant/      retrieval, evidence, orchestration, validation, telemetry DTOs
 src/modules/ai/             OpenAI gateway, schemas, and bounded runtime controls
-src/modules/demo/           synthetic in-process household store
+src/modules/demo/           synthetic in-process resource and audit store
 src/db/                     Drizzle schema, PostgreSQL client, encrypted seed
 drizzle/                    versioned SQL migrations
 ```
 
-The active Vercel application composes the synthetic in-process store, so it remains deterministic and infrastructure-independent. PostgreSQL is an included persistence target—not the active production data path. The repository has no vector database, pgvector migration, plaintext chunk index, queue, Redis, or autonomous agent loop.
+The active Vercel application composes the synthetic in-process resource store with validated HTTP-only circle overrides scoped to the current demo browser session. This keeps the Outer → Inner → Outer demonstration consistent across serverless route instances without pretending to provide durable persistence. PostgreSQL is an included persistence target—not the active production data path. The repository has no vector database, pgvector migration, plaintext chunk index, queue, Redis, or autonomous agent loop.
 
 Further reading:
 
@@ -266,7 +266,7 @@ Preparedness often happens away from a desk. Privato preserves the same identity
 | --- | --- |
 | Application | Next.js 15 App Router, React 19, strict TypeScript |
 | Interface | Tailwind CSS 4, custom Privato design system, Geist, Lucide React |
-| Active data path | Synthetic `globalThis` in-process household store |
+| Active data path | Synthetic `globalThis` resource/audit store plus HTTP-only per-session circle overrides |
 | Persistence target | PostgreSQL, `postgres.js`, Drizzle ORM, Drizzle Kit, versioned migrations |
 | Validation | Zod for browser input, server input, and AI structured output |
 | AI | OpenAI Node SDK, Responses API, Structured Outputs, `store: false`; model is configurable and defaults to `gpt-4.1-mini` |
@@ -336,7 +336,7 @@ The following commands were run successfully on the current repository state:
 | --- | --- | --- |
 | Lint | `pnpm lint` | Passing |
 | Typecheck | `pnpm typecheck` | Passing |
-| Unit and security tests | `pnpm test` | 53 passing tests across 8 files |
+| Unit and security tests | `pnpm test` | 56 passing tests across 9 files |
 | Production build | `pnpm build` | Passing; all App Router routes compiled |
 | Migration consistency | `pnpm exec drizzle-kit check` | Passing |
 
@@ -367,7 +367,7 @@ This repository is an independent Build Week submission. It is not an official O
 ### Not yet implemented
 
 - Production authentication, signed sessions, invitations, passkeys, or hardened account recovery
-- A durable PostgreSQL repository in the active web runtime; Vercel state remains process-local and may reset
+- A durable PostgreSQL repository in the active web runtime; resources and audit state remain process-local and may reset, while circle overrides last only for the eight-hour demo session
 - Durable encrypted document-byte storage, document preview, or download
 - KMS/envelope-key management, rotation, or client-side zero-knowledge keys
 - Embeddings, vector search, pgvector, or corpus-scale semantic retrieval

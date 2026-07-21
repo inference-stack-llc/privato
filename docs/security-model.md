@@ -21,7 +21,7 @@ Resource-not-found and resource-not-authorized produce the same user-facing stat
 
 ## Identity
 
-`SessionPrincipal`, `IdentityProviderPort`, and `DemoIdentityProvider` isolate the presentation identity switcher. The browser requests a demo switch, but the HTTP-only, same-site cookie becomes the server-side source of truth and its candidate value is resolved only against seeded household members. Ask request JSON is strict and cannot supply a member, household, circle, or resource ID. Core membership is required for the membership-change route.
+`SessionPrincipal`, `IdentityProviderPort`, and `DemoIdentityProvider` isolate the presentation identity switcher. The browser requests a demo switch, but the HTTP-only, same-site cookie becomes the server-side source of truth and its candidate value is resolved only against seeded household members. Validated circle overrides are stored in a second HTTP-only, same-site demo cookie so membership changes remain scoped to one browser session and survive Vercel route-instance changes. Ask request JSON is strict and cannot supply a member, household, circle, or resource ID. Core membership is required for the membership-change route, and non-Core previews are directed back to Alex or Maya rather than being offered a mutation that will fail.
 
 Ask responses are private and `no-store`, vary by cookie, and the route is always dynamic. The Ask client is keyed to the current principal and aborts/reset its single-turn state when identity changes. No authorized-resource list or answer cache survives the switch.
 
@@ -39,7 +39,7 @@ This is not production authentication. A production version requires signed sess
 
 The PostgreSQL seed encrypts structured fields before inserting them. The development-only fallback key exists strictly to keep synthetic local data runnable; real deployments must set `PRIVATO_MASTER_KEY` and introduce envelope keys/KMS rotation.
 
-The default in-process repository contains synthetic display fields in memory and source fixtures. It is not durable storage. Uploaded bytes are not retained by that repository.
+The default in-process repository contains synthetic display fields in memory and source fixtures. It is not durable storage. Session circle overrides are also temporary and unsigned. Uploaded bytes are not retained by that repository.
 
 ## Uploads and AI
 

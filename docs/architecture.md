@@ -69,7 +69,7 @@ When retrieval produces no relevant authorized evidence, the service returns the
 
 ## Persistence strategy
 
-The default demo repository is stored on `globalThis` so state survives App Router requests within one process. This keeps the demonstration functional without PostgreSQL and makes its reset behavior explicit.
+The default resource and audit repository is stored on `globalThis` so state survives App Router requests within one process. Circle membership changes are different: the move route writes a validated, HTTP-only override cookie scoped to the current eight-hour demo session, and every product route applies those overrides before resolving identity or authorization. This keeps the signature Outer → Inner → Outer flow consistent when Vercel dispatches page and API routes to different serverless instances, without claiming durable or authenticated persistence.
 
 The Drizzle schema and SQL migrations define the persistence target with UUID keys, referential constraints, encrypted sensitive payload JSON, encrypted document bytes, audit events, safe AI-run fields, correlation and tenant indexes, and required constraints. `src/db/seed.ts` encrypts fields before database insertion.
 

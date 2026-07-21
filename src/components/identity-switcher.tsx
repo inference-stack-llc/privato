@@ -2,14 +2,12 @@
 
 import { useRef, useState } from "react";
 import { Check, ChevronDown } from "lucide-react";
-import { useRouter } from "next/navigation";
 import type { Member, SessionPrincipal } from "@/modules/core/domain";
 import { MemberAvatar } from "@/components/member-avatar";
 
 export function IdentitySwitcher({ principal, members }: { principal: SessionPrincipal; members: Member[] }) {
   const [open, setOpen] = useState(false);
   const [pending, setPending] = useState<string>();
-  const router = useRouter();
   const container = useRef<HTMLDivElement>(null);
   const active = members.find((member) => member.id === principal.memberId) ?? members[0];
 
@@ -23,7 +21,9 @@ export function IdentitySwitcher({ principal, members }: { principal: SessionPri
     if (response.ok) {
       window.localStorage.setItem("privato:session-revision", Date.now().toString());
       setOpen(false);
-      router.refresh();
+      // Next.js preserves parent layouts during client navigation. A full reload
+      // guarantees the shell and page resolve the same cookie-backed identity.
+      window.location.reload();
     }
     setPending(undefined);
   }

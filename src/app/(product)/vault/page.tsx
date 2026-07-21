@@ -1,15 +1,13 @@
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { VaultBrowser } from "@/components/vault-browser";
-import { getDemoSnapshot } from "@/modules/demo/demo-store";
-import { getCurrentPrincipal } from "@/modules/identity/session";
+import { getCurrentSessionContext } from "@/modules/identity/session";
 import { listAuthorizedResources } from "@/modules/resources/service";
 
 export const metadata = { title: "Resource vault" };
 
 export default async function VaultPage() {
-  const principal = await getCurrentPrincipal();
-  const snapshot = getDemoSnapshot();
+  const { principal, snapshot } = await getCurrentSessionContext();
   const resources = listAuthorizedResources(principal, snapshot);
   return (
     <>
