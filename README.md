@@ -1,161 +1,397 @@
+<p align="center">
+  <img src="public/privato-logo.png" alt="Privato logo: concentric trust circles surrounding a private lock" width="360" />
+</p>
+
 # Privato
 
 > Digital vaults organize files. Privato organizes trust.
 
-Privato is a private information network that helps families and close friends organize essential documents, insurance cards, medical details, emergency contacts, and household instructions around the people they trust.
+Privato is a relationship-aware private information network that helps families and trusted contacts organize sensitive household information and retrieve it through revocable, permission-scoped AI.
 
-This repository contains a polished Build Week MVP centered on a deterministic, relationship-aware access model: Core, Inner, and Outer Circles. The golden path demonstrates that authorized information is easy to find while restricted information is unavailable through vault browsing, pasted resource URLs, and Ask Privato.
+Its signature capability, **Ask Privato**, provides revocable, identity-aware AI retrieval: the server resolves the active identity, calculates access with deterministic policy, retrieves only from that authorized scope, sends minimal evidence to OpenAI, and validates every citation before returning an answer.
 
-<p align="center">
-  <img src="docs/images/privato-responsive.png" alt="Privato running responsively on a laptop and mobile phone" width="1200" />
-</p>
-<p align="center"><sub><strong>One calm, permission-aware experience across desktop and mobile.</strong></sub></p>
-
-## What is included
-
-- Calm, responsive entry page and household dashboard
-- Memorable concentric trust map plus an accessible membership list
-- Rank-based inherited access with an owner-only Private level
-- Demo identity preview for five synthetic household members
-- Permission-filtered vault, protected detail routes, masking, audience preview, and audit history
-- Insurance image/PDF upload with validation, server-side AI extraction, editable review, uncertainty, visibility recommendation, and explicit approval
-- Manual resource-entry fallback
-- Authorization-first Ask Privato retrieval with relevance ranking, minimal evidence, validated citations, revocable access, and non-disclosing empty responses
-- Versioned AES-256-GCM encryption boundary and PostgreSQL encrypted-payload schema
-- Drizzle schema, SQL migration, and database seed
-- Timeout, transient retry, circuit breaker, correlation ID, safe AI-run metadata, and an honest unavailable state
-- Focused tests for authorization, revocation, leakage resistance, decryption boundaries, encryption, structured AI output, citation integrity, and runtime failures
-
-## Responsive by design
-
-Preparedness does not happen only at a desk. Privato is designed to remain clear and usable whether someone is organizing the household on a laptop or looking up an insurance card from a phone at the moment it is needed.
+**Authorization first. Retrieval second. AI last.**
 
 <p align="center">
-  <img src="docs/images/privato-mobile-responsive.png" alt="Privato landing page and household dashboard shown on two mobile phones" width="960" />
+  <a href="https://privato-opal.vercel.app"><strong>Live application</strong></a>
+  ·
+  <a href="docs/architecture.md">Architecture</a>
+  ·
+  <a href="docs/security-model.md">Security model</a>
+  ·
+  <a href="docs/ask-privato-implementation.md">Ask Privato implementation</a>
 </p>
-<p align="center"><sub><strong>The same trust model, optimized for focused mobile actions and full desktop workflows.</strong></sub></p>
 
-- **Adaptive navigation:** the desktop sidebar becomes a persistent, thumb-friendly bottom navigation bar on smaller screens.
-- **Intentional reflow:** hero content, readiness metrics, resource cards, trust-circle panels, forms, and review surfaces stack without losing their visual hierarchy.
-- **Touch-ready controls:** primary actions retain generous targets, dialogs fit the viewport, and identity controls condense without hiding their purpose.
-- **Readable sensitive data:** resource details, masked values, audience information, and citations remain legible without horizontal scrolling.
-- **Consistent authorization:** responsive presentation never changes the underlying access policy; every device receives the same identity-aware filtering and protected-route checks.
+<p align="center">
+  <img src="docs/images/privato-responsive.png" alt="Privato household preparedness experience displayed on a laptop and mobile phone" width="1100" />
+</p>
+<p align="center"><sub><strong>One permission-aware experience across desktop and mobile, from household preparedness to protected retrieval.</strong></sub></p>
 
-## Architecture
+## Why Privato
 
-Privato uses Next.js App Router, strict TypeScript, React server components by default, Tailwind CSS, PostgreSQL, Drizzle ORM, Zod, and the OpenAI server SDK.
+Essential household information is usually fragmented across email, text messages, wallets, cloud drives, spreadsheets, and filing cabinets. The information may exist, but that does not mean the right person can find it at the right moment.
 
-The most important boundaries are kept independent:
+Traditional vaults organize documents. Families think in relationships and trust. Privato makes that access model visible through **Core**, **Inner**, **Outer**, and owner-only **Private** levels.
 
-```text
-UI / route handlers
-  -> application services
-      -> identity provider
-      -> centralized authorization policy
-      -> resource / document ports
-      -> AI gateway port
-          -> OpenAI + bounded runtime controls for grounded Ask answers
-          -> deterministic fallback for upload extraction only
+> If something happened tonight, would the right people know where everything is?
+
+## The signature demonstration
+
+The seeded Morgan household makes Privato's central idea observable with the same question, the same resource, and a changing authorization scope.
+
+| Step | Identity and circle | Question | Verified result |
+| ---: | --- | --- | --- |
+| 1 | Alex Morgan · Core · resource owner | “What number do I call for roadside assistance?” | Grounded answer with a validated **Roadside Assistance** citation |
+| 2 | Sam Rivera · Outer | The same question | Neutral no-answer; no evidence is selected and the answer model is not invoked |
+| 3 | Sam moved to Inner | The same question | Grounded answer with the same authorized citation |
+| 4 | Sam moved back to Outer | The same question | Access is revoked on the next request; neutral no-answer and no model invocation |
+
+The neutral response is deliberately identical whether information is nonexistent, irrelevant, or outside the active identity's scope:
+
+> I couldn’t find accessible information that answers that question.
+
+The model does not decide what Sam may see. The same natural-language question produces a different result because Privato recalculates deterministic authorization before retrieval. Restricted resources never enter the answer model's context, and revocation applies without restarting the application or clearing a server-side conversation cache.
+
+## Ask Privato
+
+Ask Privato is **authorization-scoped grounded retrieval**, implemented as a bounded, single-turn server use case:
+
+1. Resolve the active identity from the server-side demo session.
+2. Rebuild current household membership and authorized resource IDs.
+3. Run structured and lexical ranking only over approved records in that authorized set.
+4. Re-resolve and re-authorize each selected candidate.
+5. Cross the sensitive-field/decryption boundary only for selected authorized candidates.
+6. Build minimal evidence packets with bounded fields, values, source IDs, and public resource IDs.
+7. Invoke the OpenAI Responses API with strict Structured Outputs and response storage disabled.
+8. Validate the response schema, every source/resource pair, and current citation authorization.
+9. Construct citation URLs on the server and return a private, non-cacheable response.
+
+The active demo repository contains synthetic plaintext fields in memory, so its `ResourceEncryptionPort` is an authorization-enforcing sensitive-read boundary rather than a runtime decryptor. The PostgreSQL schema defines encrypted payload columns, and its seed encrypts resource fields with the versioned AES-256-GCM implementation before insertion.
+
+Ordinary document assistants often search a broad corpus and then control what is displayed. Privato constrains the corpus before relevant fields are read or evidence is sent to the answer model. AI assists within deterministic policy boundaries; it never widens them.
+
+## Authorization pipeline
+
+```mermaid
+flowchart LR
+    A["Server-resolved identity"] --> B["Current household membership"]
+    B --> C["Central authorization policy"]
+    C --> D["Authorized resource IDs"]
+    D --> E["Structured + lexical retrieval"]
+    E --> F["Recheck selected candidates"]
+    F --> G["Sensitive-field boundary"]
+    G --> H["Minimal evidence packets"]
+    H --> I["OpenAI grounded answer"]
+    I --> J["Schema + citation validation"]
+    J --> K["Protected response"]
 ```
 
-The live demo defaults to an in-process synthetic repository so the judging path remains reliable without infrastructure. The included PostgreSQL schema, migration, encrypted seed, and repository boundaries establish the production persistence shape. See [architecture](docs/architecture.md) and [security model](docs/security-model.md).
+> **Authorization first. Retrieval second. AI last.**
 
-## Local setup
+OpenAI receives the question and only the evidence selected from Privato's authorized scope. It does not receive the household vault, membership graph, internal database IDs, inaccessible resource names, or authorization logic.
 
-Prerequisites:
+## How this answer was protected
 
-- Node.js 20+
-- pnpm 10+
-- PostgreSQL 15+ only when exercising the database path
+Every Ask response includes a collapsible protection trace designed to make the safety path inspectable without exposing the underlying content.
+
+| Safe trace field | What it communicates |
+| --- | --- |
+| Active identity and circle | Whose current server-side scope was evaluated |
+| Authorized resource count | Size of the policy-approved scope |
+| Candidates and sources | How many approved records were considered and cited |
+| Policy decision | Allowed, no authorized evidence, insufficient evidence, or unavailable |
+| Retrieval method | Structured and lexical ranking |
+| Model invocation and model | Whether generation ran and which configured model handled it |
+| Duration, retries, and circuit state | Bounded runtime behavior |
+| Token usage | Aggregate input and output tokens when a model ran |
+| Correlation ID | Short identifier for safe operational follow-up |
+
+The trace intentionally excludes questions, prompts, decrypted evidence, answers, policy numbers, medical values, restricted resources, internal database IDs, and encryption keys.
+
+When retrieval finds no relevant authorized evidence, Privato returns the neutral response with zero sources **without invoking the generative answer model**.
+
+## Trust circles
+
+Lower ranks are more trusted. A member inherits access outward; a resource never inherits inward.
+
+| Level | Typical members | Effective access |
+| --- | --- | --- |
+| Private | Resource owner | Owner-only resources, regardless of the owner's circle |
+| Core | Spouse or closest trusted person | Core, Inner, and Outer resources |
+| Inner | Children or close family | Inner and Outer resources |
+| Outer | Friends, caregivers, or advisors | Outer essentials only |
+
+The centralized rule in [`policy.ts`](src/modules/authorization/policy.ts) is reused for dashboard and vault filtering, resource-detail and pasted-URL checks, effective-audience previews, selected sensitive-field reads, Ask Privato retrieval, and citation revalidation. Cross-household access fails before rank is considered.
+
+## Core capabilities
+
+- Household readiness dashboard with accessible-resource, category, member, expiration, and activity summaries
+- Concentric trust-circle map with exact access-impact previews before a member moves
+- Five-identity synthetic household preview with an explicit demo-authentication disclaimer
+- Permission-filtered vault search, category filters, protected detail routes, and non-disclosing unavailable states
+- Sensitive-value masking and user-controlled reveal behavior
+- Effective-audience calculation from current ownership, membership, and visibility
+- Insurance-card upload validation for PDF, JPEG, PNG, and WebP files up to 5 MB
+- OpenAI structured extraction when configured, with editable review, uncertainty indicators, and advisory visibility recommendation
+- Deterministic extraction fallback and manual-entry fallback for the infrastructure-independent demo
+- Ask Privato grounded answers, server-validated citations, protection traces, and neutral no-answer behavior
+- Safe in-memory audit events and AI-run aggregates that exclude protected content
+- Versioned AES-256-GCM primitives, Drizzle schema, migrations, and encrypted PostgreSQL seed path
+- Responsive desktop and mobile interface with Vercel Analytics
+
+## Closed-loop AI workflow
+
+The implemented insurance workflow is:
+
+```text
+Upload synthetic insurance document
+  → validate type, extension, and size on the server
+  → OpenAI structured extraction or labeled demo fallback
+  → validate with Zod
+  → review and edit every field
+  → approve visibility and effective audience
+  → save structured resource + attachment metadata to the in-process demo store
+  → make the resource available to authorized vault and Ask requests
+  → return grounded answers with validated citations
+```
+
+The model may recommend visibility, but it cannot authorize or save a resource. Uploaded bytes are processed in memory and are **not retained** by the active demo; only reviewed structured fields and attachment metadata are stored in process. Use synthetic documents only. Durable encrypted document storage is represented by `DocumentStoragePort` and the PostgreSQL schema but is not wired into the Vercel runtime.
+
+## Security invariants
+
+- **The model never decides authorization.** The single policy function decides access before retrieval or sensitive reads.
+- The Ask request accepts only a bounded question; it cannot supply a household, actor, circle, or resource ID.
+- The demo identity cookie is resolved against current seeded membership on the server. It is a preview mechanism, not production authentication.
+- Cross-household access is denied before trust rank is evaluated.
+- Private resources remain owner-only.
+- Retrieval receives an authorized ID set and can query only corresponding approved search records.
+- Every selected candidate is re-resolved and re-authorized before crossing the sensitive-field boundary.
+- Only bounded, selected authorized evidence is sent to OpenAI; restricted resources never enter the answer model's context.
+- Every citation must match an exact supplied source/public-ID pair and pass a fresh authorization lookup.
+- Invalid citations fail closed after one bounded correction attempt; they are never silently filtered into a partial result.
+- Missing, restricted, guessed, and irrelevant records share the same neutral no-answer behavior.
+- Ask is single-turn; the client aborts and clears pending state on identity changes, and responses are private, `no-store`, and varied by cookie.
+- Questions, prompts, evidence, answers, protected fields, and document contents are excluded from the typed audit and AI-run records.
+- Direct resource routes recheck authorization and render restricted records like nonexistent records.
+
+This is a security-minded prototype—not HIPAA compliance, SOC 2 compliance, zero-knowledge encryption, end-to-end encryption, a formal audit, or a production certification. See the [security model](docs/security-model.md) and [Ask Privato threat model](docs/ask-privato-threat-model.md).
+
+## Authorization-aware AI evaluations
+
+The standard suite uses deterministic gateway fakes, so security behavior is repeatable and does not require paid or nondeterministic model calls.
+
+| Evaluation | Verified behavior |
+| --- | --- |
+| Circle authorization matrix | Core/Inner/Outer inheritance and owner-only Private access follow one policy |
+| Cross-household principal | Authorized scope is empty before retrieval |
+| Same question, different identity | Alex receives the grounded citation; Sam Outer receives the neutral response |
+| Immediate grant and revocation | Sam's Outer → Inner → Outer change affects the next request using the same service instance |
+| No-evidence fast path | Zero candidates, zero citations, and no answer-model call |
+| Concurrent revocation | Access removed between retrieval and generation prevents evidence from reaching the model |
+| Fabricated citation | One correction attempt, then a protected unavailable state |
+| Prompt injection | Stored instructions remain data; arbitrary citations and system-prompt leakage are rejected |
+| Restricted-name and guessed-ID prompts | No existence disclosure and no model invocation for Sam Outer |
+| Authorization before sensitive read | Unauthorized and unselected resources never cross `ResourceEncryptionPort` |
+| Identity isolation | An Alex result does not appear in the next Sam response |
+| Runtime failure | Hard timeout, transient retry, validation failure, and circuit-open behavior fail safely |
+
+Current result: **53 tests passing across 8 files** with `pnpm test`. This is focused unit and security coverage; the repository does not claim an automated browser end-to-end suite. The full matrix and live-provider acceptance sequence are documented in [Ask Privato evaluations](docs/ask-privato-evals.md).
+
+## Technical architecture
+
+Privato is a production-shaped vertical slice built with Next.js App Router, React Server Components by default, strict TypeScript, Tailwind CSS, PostgreSQL/Drizzle boundaries, Zod validation, and the OpenAI server SDK.
+
+```text
+src/app/                    pages and narrow server route handlers
+src/components/             interaction and presentation
+src/modules/identity/       session principal and demo identity provider
+src/modules/authorization/  single deterministic access policy
+src/modules/resources/      authorized resource boundaries
+src/modules/encryption/     versioned AES-256-GCM primitives
+src/modules/assistant/      retrieval, evidence, orchestration, validation, telemetry DTOs
+src/modules/ai/             OpenAI gateway, schemas, and bounded runtime controls
+src/modules/demo/           synthetic in-process household store
+src/db/                     Drizzle schema, PostgreSQL client, encrypted seed
+drizzle/                    versioned SQL migrations
+```
+
+The active Vercel application composes the synthetic in-process store, so it remains deterministic and infrastructure-independent. PostgreSQL is an included persistence target—not the active production data path. The repository has no vector database, pgvector migration, plaintext chunk index, queue, Redis, or autonomous agent loop.
+
+Further reading:
+
+- [Architecture](docs/architecture.md)
+- [Prototype security model](docs/security-model.md)
+- [Ask Privato implementation plan](docs/ask-privato-implementation.md)
+- [Ask Privato threat model](docs/ask-privato-threat-model.md)
+- [Authorization and leakage evaluations](docs/ask-privato-evals.md)
+- [Five-minute demonstration](docs/demo-script.md)
+
+## AI runtime controls
+
+The active TypeScript `ResilientAiRuntime` implements:
+
+- an 18-second default hard timeout, even when an operation ignores abort
+- at most two retries by default, only for timeouts, connection errors, HTTP 408/409/429, and upstream 5xx failures
+- exponential backoff with cryptographic jitter
+- a process-local circuit that opens after three exhausted transient failures and probes again after 30 seconds
+- safe error categorization and correlation IDs
+- Zod Structured Output validation and one bounded correction attempt for an invalid Ask result
+- aggregate token accounting without prompt or evidence logging
+- a no-evidence fast path and a protected unavailable state
+
+The fallback gateway is intentionally asymmetric: it can produce a clearly labeled synthetic insurance extraction, but it never fabricates an Ask Privato answer.
+
+### ElectriPy status
+
+ElectriPy does **not** execute in the current Next.js or Vercel path. The inspected distribution is Python-only, while this application is TypeScript. Privato preserves an ElectriPy-compatible `AiRuntimePort`/`AiGatewayPort` boundary while implementing the current timeout, retry, jitter, circuit, and telemetry controls locally in TypeScript. A supported Python service could be integrated later without moving authorization into the AI layer.
+
+## Responsive experience
+
+Preparedness often happens away from a desk. Privato preserves the same identity, authorization, and retrieval behavior while adapting navigation and content hierarchy for smaller screens.
+
+<p align="center">
+  <img src="docs/images/privato-mobile-responsive.png" alt="Privato household dashboard and landing experience displayed on two mobile phones" width="820" />
+</p>
+<p align="center"><sub><strong>Focused mobile actions and complete desktop workflows share the same trust model.</strong></sub></p>
+
+- Desktop navigation becomes a persistent, safe-area-aware bottom bar on mobile.
+- Vault cards, resource details, masking controls, and access audiences remain readable without horizontal scrolling.
+- Ask Privato preserves question entry, answer states, citations, and the protection trace.
+- Trust-circle management, access-impact previews, review forms, and primary actions reflow for touch targets.
+- Responsive presentation never changes the server-side authorization result.
+
+## Technology stack
+
+| Layer | Technology |
+| --- | --- |
+| Application | Next.js 15 App Router, React 19, strict TypeScript |
+| Interface | Tailwind CSS 4, custom Privato design system, Geist, Lucide React |
+| Active data path | Synthetic `globalThis` in-process household store |
+| Persistence target | PostgreSQL, `postgres.js`, Drizzle ORM, Drizzle Kit, versioned migrations |
+| Validation | Zod for browser input, server input, and AI structured output |
+| AI | OpenAI Node SDK, Responses API, Structured Outputs, `store: false`; model is configurable and defaults to `gpt-4.1-mini` |
+| Retrieval | Permission-filtered structured and lexical scoring over authorized metadata; no embeddings |
+| Security | Centralized rank policy, selected-field boundary, AES-256-GCM primitives for the database path, private response headers |
+| Reliability | Local TypeScript timeout/retry/jitter/circuit controls behind ElectriPy-compatible ports |
+| Observability | Safe typed audit/AI-run aggregates and Vercel Analytics |
+| Testing | Vitest 3.2.4, ESLint, TypeScript, Next.js production build, Drizzle migration check |
+
+## Local development
+
+### Prerequisites
+
+- Node.js 20 or newer; verification used Node.js 20.18.1
+- pnpm 10; the repository pins pnpm 10.24.0
+- PostgreSQL only when exercising the optional persistence target
+
+### Run the infrastructure-independent demo
 
 ```bash
+git clone https://github.com/inference-stack-llc/privato.git
+cd privato
 pnpm install
 cp .env.example .env.local
 pnpm dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+Open [http://localhost:3000](http://localhost:3000). The dashboard, circles, vault, resource details, manual entry, and labeled demo extraction work without PostgreSQL. Real Ask Privato answers require a server-side `OPENAI_API_KEY`; without it, relevant questions return the designed unavailable state while the no-authorized-evidence fast path still works without a model.
 
-The synthetic vault, circles, resource browsing, manual resource creation, and deterministic upload-extraction demonstration work without PostgreSQL or an OpenAI key. A real grounded Ask Privato answer requires `OPENAI_API_KEY`; when it is absent, Privato does not fabricate an answer and instead shows its designed unavailable state. The no-authorized-evidence fast path remains functional without a key because it deliberately skips answer generation.
+### Exercise the PostgreSQL target
 
-## Environment variables
-
-| Variable | Required | Purpose |
-| --- | --- | --- |
-| `DATABASE_URL` | Database path only | PostgreSQL connection URL |
-| `PRIVATO_MASTER_KEY` | Production-shaped DB path | 32-byte AES key encoded as 64 hex characters |
-| `OPENAI_API_KEY` | Ask answer path | Enables live server-side OpenAI extraction and real grounded Ask Privato answers |
-| `OPENAI_MODEL` | No | Model selected by the AI provider adapter; defaults to `gpt-4.1-mini` |
-| `DEMO_SESSION_SECRET` | Future persistence | Reserved for replacing the bounded demo identity cookie with a signed session |
-
-Generate a local encryption key with `openssl rand -hex 32`. If no key is configured, the synthetic local demo uses an explicit development-only key; database deployments should always configure one.
-
-## Database
-
-Create the configured database, then run:
+Create an empty PostgreSQL database, configure `DATABASE_URL` and a non-demo `PRIVATO_MASTER_KEY`, then run:
 
 ```bash
 pnpm db:migrate
 pnpm db:seed
 ```
 
-Schema iteration commands:
+Schema iteration commands are also available:
 
 ```bash
 pnpm db:generate
 pnpm db:push
 ```
 
-The seed contains only obvious fictional names, masked identifiers, `555` phone numbers, and fictional institutions.
+These commands create and seed the persistence shape. They do not switch the application UI from the in-process repository to PostgreSQL; that runtime adapter remains future work.
+
+## Environment variables
+
+Never commit `.env.local`. No current variable is intended for browser exposure.
+
+| Variable | Required | Purpose and format | Exposure |
+| --- | --- | --- | --- |
+| `DATABASE_URL` | Only for database commands/path | PostgreSQL connection URL, such as a local `postgres://` connection | Server-only |
+| `PRIVATO_MASTER_KEY` | Required for non-demo database use | Exactly 32 bytes encoded as 64 hexadecimal characters; generate with `openssl rand -hex 32` | Server-only |
+| `OPENAI_API_KEY` | Required for real Ask and OpenAI extraction | OpenAI project/service-account API key | Server-only |
+| `OPENAI_MODEL` | Optional | Responses API model ID; defaults to `gpt-4.1-mini` | Server-only |
+| `DEMO_SESSION_SECRET` | Not currently consumed | Reserved for replacing the unsigned demo identity preview with a signed session | Server-only |
+
+If `PRIVATO_MASTER_KEY` is absent, encryption helpers use a fixed development-only key so synthetic local data remains runnable. Do not use that fallback for real information.
 
 ## Verification
 
-```bash
-pnpm lint
-pnpm typecheck
-pnpm test
-pnpm build
-```
+The following commands were run successfully on the current repository state:
 
-## ElectriPy AI integration
+| Check | Command | Result |
+| --- | --- | --- |
+| Lint | `pnpm lint` | Passing |
+| Typecheck | `pnpm typecheck` | Passing |
+| Unit and security tests | `pnpm test` | 53 passing tests across 8 files |
+| Production build | `pnpm build` | Passing; all App Router routes compiled |
+| Migration consistency | `pnpm exec drizzle-kit check` | Passing |
 
-[ElectriPy AI 0.5.0](https://www.electripy.ai/) is currently published as a Python 3.11+ package with the `electripy` import namespace, not as a supported Next.js TypeScript runtime package. Privato therefore does not fabricate an npm import.
+The standard test suite does not call a paid model. Live-provider behavior is a separate acceptance check described in [`docs/ask-privato-evals.md`](docs/ask-privato-evals.md).
 
-The application isolates runtime control behind `AiRuntimePort` and `AiGatewayPort`. The active TypeScript `ResilientAiRuntime` implements hard timeouts, transient-only bounded retries with jitter, a circuit breaker, safe error categorization, and aggregate token metadata. It is not ElectriPy and the repository does not claim that ElectriPy executes in Vercel. A supported ElectriPy Python service can be placed behind the runtime boundary later without changing authorization or application services. Raw documents, questions, prompts, answers, and protected values are not emitted to telemetry.
+## Built for OpenAI Build Week
 
-## Ask Privato security sequence
+Privato was conceived and built for OpenAI Build Week under an unusually compressed one-day schedule. The goal was a complete, production-shaped vertical slice rather than a broad set of unfinished screens.
 
-```mermaid
-flowchart LR
-  I[Trusted demo identity] --> A[Central authorization policy]
-  A --> R[Authorized structured + lexical retrieval]
-  R --> D[Recheck + selected-field boundary]
-  D --> E[Bounded evidence packets]
-  E --> O[OpenAI Responses API]
-  O --> C[Schema + citation validation]
-  C --> U[Safe response DTO]
-```
+Codex served as the implementation partner across product architecture, domain boundaries, centralized authorization, permission-filtered retrieval, OpenAI integration, runtime controls, adversarial tests, responsive implementation, and technical documentation.
 
-The model never decides authorization. The server calculates authorized resource IDs first, retrieval is restricted to that set, and only selected authorized candidates cross the sensitive-field boundary. An empty relevant set returns the neutral no-answer response without invoking the answer model. Circle changes are read from a fresh server snapshot on each request, so effective access is revoked immediately.
+OpenAI powers the configured document-extraction path and grounded Ask Privato answers through the server-side Responses API and Structured Outputs. OpenAI generates within Privato's deterministic evidence boundary; it does not authenticate users, decide circle access, retrieve unrestricted resources, or approve sharing.
 
-The active retriever uses deterministic structured and lexical scoring over household-scale, approved searchable metadata. Embeddings are intentionally not enabled: there is no unrestricted vector search, no duplicate plaintext chunk store, and no pgvector claim. The `AuthorizedRetrieverPort` can accept a tenant-scoped embedding adapter later if corpus size warrants it.
+This repository is an independent Build Week submission. It is not an official OpenAI application and does not imply OpenAI endorsement or a contest result.
 
-## Honest prototype security statement
+## Project status and limitations
 
-Privato is a security-minded prototype, not a production security certification. It does not claim HIPAA compliance, SOC 2 compliance, zero-knowledge encryption, or end-to-end encryption.
+### Implemented
 
-Implemented controls include centralized server-side authorization, cross-household denial, owner-only Private resources, direct-route rechecks, authorization before any sensitive read boundary, authorized-ID-scoped retrieval, server-only OpenAI calls with response storage disabled, Zod input/output validation, strict citation validation, a no-model fast path, upload limits and type checks, safe error messages, AES-256-GCM primitives, secure response headers, non-sensitive audit events, and safe aggregate AI-run records.
+- Complete synthetic Morgan household experience across dashboard, circles, vault, details, resource intake, and Ask Privato
+- Centralized relationship-aware authorization with immediate membership recalculation
+- Real server-side OpenAI extraction and grounded-answer paths when configured
+- Permission-filtered structured retrieval, bounded evidence, strict output/citation validation, and safe failure states
+- Focused authorization, leakage, encryption, schema, and runtime-control tests
+- Responsive web experience deployed on Vercel
+- PostgreSQL schema, migrations, encrypted seed path, and replaceable persistence boundaries
 
-## Known limitations
+### Not yet implemented
 
-- The default golden path uses an in-process demo repository; state resets with the server and is not suitable for multiple instances.
-- Demo identity switching is explicitly a presentation feature, not production authentication.
-- Real Ask Privato answers require a server-side OpenAI key and configured model. The repository's deterministic AI fallback remains limited to the clearly labeled upload-extraction demo and never fabricates Ask answers.
-- Ask retrieval currently uses structured and lexical scoring rather than embeddings. It is appropriate for the tiny synthetic household corpus, not a large document collection.
-- AI-run telemetry is recorded in the active in-memory demo store. The Drizzle schema and migration define the PostgreSQL persistence target, but the Vercel demo does not claim durable AI-run storage without a configured database adapter.
-- Uploaded document bytes are validated and processed in memory, but the infrastructure-free demo stores only protected document metadata. Durable encrypted bytes require wiring `DocumentStoragePort` to PostgreSQL or object storage.
-- PostgreSQL migration and encrypted seed are included, but the default screens do not require a running database.
-- The fallback extractor produces stable synthetic fields for demonstration; configure OpenAI for document-aware extraction.
-- Invitations, reminders, temporary grants, recovery, billing, and real document preview/download are intentionally outside the one-day scope.
+- Production authentication, signed sessions, invitations, passkeys, or hardened account recovery
+- A durable PostgreSQL repository in the active web runtime; Vercel state remains process-local and may reset
+- Durable encrypted document-byte storage, document preview, or download
+- KMS/envelope-key management, rotation, or client-side zero-knowledge keys
+- Embeddings, vector search, pgvector, or corpus-scale semantic retrieval
+- A running ElectriPy service or package in the request path
+- Distributed rate limiting, distributed circuit state, or multi-instance membership transactions
+- Automated browser end-to-end tests, independent security audit, or formal regulatory compliance
+- Native iOS/Android clients, billing, subscriptions, reminders, or production notification delivery
 
-See [the five-minute demo script](docs/demo-script.md) for the intended presentation flow.
+## Future direction
+
+The next credible steps are production authentication and signed sessions, a reviewed PostgreSQL repository, managed envelope encryption, secure recovery delegates, temporary and expiring access grants, reminder workflows, additional reviewed document types, tenant-scoped semantic retrieval when corpus size justifies it, native clients, and an independent security assessment.
+
+## License and contributing
+
+This repository currently has no `LICENSE` file. The source is available for evaluation, but source availability alone does not grant permission to copy, modify, or redistribute it.
+
+There is not yet a formal contribution guide. Before proposing a change, open a [GitHub issue](https://github.com/inference-stack-llc/privato/issues) and preserve the authorization, synthetic-data, and non-disclosure invariants documented in [`AGENTS.md`](AGENTS.md).
+
+## Author and links
+
+Privato is built by [Inference Stack LLC](https://github.com/inference-stack-llc).
+
+- [Live application](https://privato-opal.vercel.app)
+- [GitHub repository](https://github.com/inference-stack-llc/privato)
+- [Architecture](docs/architecture.md)
+- [Security model](docs/security-model.md)
+- [Ask Privato evaluations](docs/ask-privato-evals.md)
