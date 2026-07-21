@@ -1,0 +1,2 @@
+ALTER TABLE "circles" ADD CONSTRAINT "circles_rank_check" CHECK ("circles"."rank" between 1 and 3);--> statement-breakpoint
+ALTER TABLE "resource_documents" ADD CONSTRAINT "resource_documents_size_check" CHECK ("resource_documents"."size_bytes" between 1 and 5242880);
