@@ -69,15 +69,16 @@ export const demoResources: Resource[] = [
   {
     ...base,
     id: "roadside-assistance",
-    name: "Roadside assistance",
+    name: "Roadside Assistance",
     category: "VEHICLES",
-    description: "24/7 roadside help and towing instructions.",
+    description: "24/7 towing, battery service, lockout assistance, and roadside coverage for the 2021 Honda Pilot through Privato Motor Club.",
     visibility: "INNER",
     fields: [
-      { label: "Provider", value: "Northstar Roadside" },
-      { label: "24/7 number", value: "(555) 010-7722" },
-      { label: "Membership", value: "RS-DEMO-2218", mask: true },
-      { label: "Coverage", value: "Towing up to 100 miles" },
+      { label: "Provider", value: "Privato Motor Club" },
+      { label: "Phone number", value: "1-800-555-0147" },
+      { label: "Membership ID", value: "PMC-4821-DEMO", mask: true },
+      { label: "Coverage", value: "Towing, battery service, lockout assistance" },
+      { label: "Covered vehicle", value: "2021 Honda Pilot" },
     ],
   },
   {

@@ -1,5 +1,5 @@
-import type { Resource } from "@/modules/core/domain";
 import type { AssistantAnswer, InsuranceExtraction } from "@/modules/ai/schemas";
+import type { EvidencePacket } from "@/modules/assistant/types";
 
 export interface AiRunMetadata {
   correlationId: string;
@@ -27,7 +27,8 @@ export interface AiGatewayPort {
   }): Promise<AiResult<InsuranceExtraction>>;
   answerAuthorizedQuestion(input: {
     question: string;
-    authorizedResources: Resource[];
+    evidencePackets: EvidencePacket[];
     correlationId: string;
+    correctionAttempt: number;
   }): Promise<AiResult<AssistantAnswer>>;
 }

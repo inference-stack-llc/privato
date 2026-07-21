@@ -12,7 +12,13 @@ export default async function AskPage() {
   return (
     <>
       <header className="page-heading"><div className="page-heading-copy"><span className="page-kicker">Permission-aware answers</span><h1>Ask the information you trust.</h1><p>A focused assistant for real household questions—grounded only in resources available to your current identity.</p></div></header>
-      <AskPrivato firstName={principal.displayName.split(" ")[0]} accessibleCount={resources.length} />
+      <AskPrivato
+        key={principal.memberId}
+        principalId={principal.memberId}
+        identityName={principal.displayName}
+        circle={principal.circle}
+        accessibleCount={resources.length}
+      />
     </>
   );
 }

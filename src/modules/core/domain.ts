@@ -69,6 +69,32 @@ export interface AuditEvent {
     | "ASSISTANT_QUERY_EXECUTED";
   outcome: "SUCCESS" | "DENIED" | "FAILED";
   summary: string;
+  safeMetadata?: Record<string, string | number | boolean>;
+  createdAt: string;
+}
+
+export interface AiRunRecord {
+  id: string;
+  correlationId: string;
+  householdId: string;
+  actorMemberId: string;
+  operation: "ASK_PRIVATO";
+  retrievalMode: "structured_lexical";
+  authorizedResourceCount: number;
+  candidateCount: number;
+  sourceCount: number;
+  answerable: boolean;
+  answerModelInvoked: boolean;
+  provider: "openai" | "none";
+  model: string;
+  durationMs: number;
+  retryCount: number;
+  circuitState: "closed" | "open" | "half-open";
+  inputTokens?: number;
+  outputTokens?: number;
+  estimatedCost?: string;
+  outcome: "SUCCESS" | "NO_EVIDENCE" | "UNAVAILABLE";
+  errorCategory?: string;
   createdAt: string;
 }
 
@@ -86,6 +112,7 @@ export interface HouseholdSnapshot {
   members: Member[];
   resources: Resource[];
   auditEvents: AuditEvent[];
+  aiRuns?: AiRunRecord[];
 }
 
 export const visibilityLabels: Record<Visibility, string> = {

@@ -21,7 +21,9 @@ Resource-not-found and resource-not-authorized produce the same user-facing stat
 
 ## Identity
 
-`SessionPrincipal`, `IdentityProviderPort`, and `DemoIdentityProvider` isolate the presentation identity switcher. Candidate cookie values are resolved only against seeded household members. Core membership is required for the membership-change route.
+`SessionPrincipal`, `IdentityProviderPort`, and `DemoIdentityProvider` isolate the presentation identity switcher. The browser requests a demo switch, but the HTTP-only, same-site cookie becomes the server-side source of truth and its candidate value is resolved only against seeded household members. Ask request JSON is strict and cannot supply a member, household, circle, or resource ID. Core membership is required for the membership-change route.
+
+Ask responses are private and `no-store`, vary by cookie, and the route is always dynamic. The Ask client is keyed to the current principal and aborts/reset its single-turn state when identity changes. No authorized-resource list or answer cache survives the switch.
 
 This is not production authentication. A production version requires signed sessions, invitations, strong account recovery, CSRF review, rate limits, and durable membership transactions.
 
@@ -53,11 +55,27 @@ The default in-process repository contains synthetic display fields in memory an
 - Retry applies only to timeouts, connection errors, 408/409/429, and server errors
 - Circuit and retry budgets are bounded
 
-Ask Privato receives only already-authorized resources. Citations are intersected with authorized resource IDs a second time before returning to the browser.
+Ask Privato enforces authorization first, retrieval second, AI last:
+
+1. Resolve the current server principal and current membership.
+2. Calculate authorized resource IDs with the centralized policy.
+3. Retrieve only search records in that authorized set.
+4. Assert every candidate belongs to the household and authorized set.
+5. Re-resolve and re-authorize each selected candidate before reading sensitive fields.
+6. Build bounded, minimal evidence packets.
+7. Skip answer generation when no relevant authorized evidence exists.
+8. Validate the structured answer and every source/public-ID pair.
+9. Recheck current authorization for every citation before returning its deterministic route.
+
+Restricted records are neither retrieved nor sent to OpenAI. Invalid citations fail the whole answer after one bounded correction attempt; they are not silently filtered. Resource-not-found, restricted-resource guesses, exact restricted titles, and permission-override prompts produce the same neutral no-answer behavior when no accessible evidence exists.
+
+OpenAI requests use the Responses API with Structured Outputs, bounded output, no tools, and `store: false`. Evidence and questions are explicitly treated as untrusted data. Stored commands cannot alter the server authorization set, request arbitrary tools, or construct citation links.
 
 ## Audit and telemetry
 
-The demo records creation, view, membership, extraction, and assistant events with actor, action, result, timestamp, and a non-sensitive summary. No raw documents, policy numbers, medical values, or prompts are logged.
+The demo records creation, view, membership, extraction, and assistant events with actor, action, result, timestamp, and a non-sensitive summary. Ask also records safe AI-run aggregates: correlation ID, retrieval mode, authorized/candidate/source counts, answerable and model-invoked flags, provider/model, duration, retry/circuit state, token counts, outcome, and safe error category. No questions, answers, raw documents, evidence, prompts, policy numbers, medical values, or decrypted fields are logged.
+
+These records are in-memory in the active demo. The PostgreSQL `ai_runs` schema and migration define durable columns and indexes, but no durable runtime claim is made until the database adapter is active.
 
 ## Response hardening
 
@@ -65,4 +83,4 @@ The Next.js configuration disables the framework signature and sets content-type
 
 ## Explicit non-claims
 
-This prototype is not certified HIPAA compliant or SOC 2 compliant. It is not zero-knowledge or end-to-end encrypted. A production launch requires an independent threat model, authentication and authorization review, database adapter review, key-management design, logging review, rate limiting, dependency scanning, security testing, privacy policy, incident response, and operational controls.
+This prototype is not certified HIPAA compliant or SOC 2 compliant. It is not zero-knowledge or end-to-end encrypted. The active demo store holds synthetic plaintext fields in process; AES-256-GCM is exercised by the PostgreSQL seed and encryption boundary, not by the default screen data path. ElectriPy is not running in the TypeScript deployment. Retrieval is structured and lexical rather than semantic. A production launch requires an independent threat model, real authentication and signed sessions, CSRF review, a deployed database adapter, key-management design, logging review, distributed rate limiting, dependency scanning, security testing, privacy policy, incident response, and operational controls.

@@ -58,6 +58,7 @@ export function CircleManager({ initialMembers, resources, actorMemberId }: { in
       return;
     }
     setMembers((current) => current.map((member) => member.id === selected.id ? { ...member, circle: target } : member));
+    window.localStorage.setItem("privato:session-revision", Date.now().toString());
     setSuccess(`${selected.displayName} is now in the ${target[0]}${target.slice(1).toLowerCase()} Circle.`);
     setSelected(undefined);
     setPending(false);

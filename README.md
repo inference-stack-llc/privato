@@ -20,11 +20,11 @@ This repository contains a polished Build Week MVP centered on a deterministic, 
 - Permission-filtered vault, protected detail routes, masking, audience preview, and audit history
 - Insurance image/PDF upload with validation, server-side AI extraction, editable review, uncertainty, visibility recommendation, and explicit approval
 - Manual resource-entry fallback
-- Authorization-first Ask Privato retrieval with citations and non-disclosing empty responses
+- Authorization-first Ask Privato retrieval with relevance ranking, minimal evidence, validated citations, revocable access, and non-disclosing empty responses
 - Versioned AES-256-GCM encryption boundary and PostgreSQL encrypted-payload schema
 - Drizzle schema, SQL migration, and database seed
-- Timeout, transient retry, circuit breaker, correlation ID, safe metadata, and local AI fallback controls
-- Focused tests for authorization, decryption boundaries, encryption, structured AI output, and assistant context
+- Timeout, transient retry, circuit breaker, correlation ID, safe AI-run metadata, and an honest unavailable state
+- Focused tests for authorization, revocation, leakage resistance, decryption boundaries, encryption, structured AI output, citation integrity, and runtime failures
 
 ## Responsive by design
 
@@ -54,8 +54,8 @@ UI / route handlers
       -> centralized authorization policy
       -> resource / document ports
       -> AI gateway port
-          -> OpenAI + bounded runtime controls
-          -> deterministic demo fallback
+          -> OpenAI + bounded runtime controls for grounded Ask answers
+          -> deterministic fallback for upload extraction only
 ```
 
 The live demo defaults to an in-process synthetic repository so the judging path remains reliable without infrastructure. The included PostgreSQL schema, migration, encrypted seed, and repository boundaries establish the production persistence shape. See [architecture](docs/architecture.md) and [security model](docs/security-model.md).
@@ -76,7 +76,7 @@ pnpm dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
-The complete synthetic demo works without PostgreSQL or an OpenAI key. When `OPENAI_API_KEY` is absent, the same validated AI port uses a clearly labeled deterministic fallback so upload and assistant demonstrations remain available.
+The synthetic vault, circles, resource browsing, manual resource creation, and deterministic upload-extraction demonstration work without PostgreSQL or an OpenAI key. A real grounded Ask Privato answer requires `OPENAI_API_KEY`; when it is absent, Privato does not fabricate an answer and instead shows its designed unavailable state. The no-authorized-evidence fast path remains functional without a key because it deliberately skips answer generation.
 
 ## Environment variables
 
@@ -84,7 +84,7 @@ The complete synthetic demo works without PostgreSQL or an OpenAI key. When `OPE
 | --- | --- | --- |
 | `DATABASE_URL` | Database path only | PostgreSQL connection URL |
 | `PRIVATO_MASTER_KEY` | Production-shaped DB path | 32-byte AES key encoded as 64 hex characters |
-| `OPENAI_API_KEY` | No | Enables live server-side OpenAI extraction and answers |
+| `OPENAI_API_KEY` | Ask answer path | Enables live server-side OpenAI extraction and real grounded Ask Privato answers |
 | `OPENAI_MODEL` | No | Model selected by the AI provider adapter; defaults to `gpt-4.1-mini` |
 | `DEMO_SESSION_SECRET` | Future persistence | Reserved for replacing the bounded demo identity cookie with a signed session |
 
@@ -121,18 +121,38 @@ pnpm build
 
 [ElectriPy AI 0.5.0](https://www.electripy.ai/) is currently published as a Python 3.11+ package with the `electripy` import namespace, not as a supported Next.js TypeScript runtime package. Privato therefore does not fabricate an npm import.
 
-The application isolates runtime control behind `AiGatewayPort` and a TypeScript runtime adapter implementing the relevant one-day controls: timeouts, transient-only bounded retries with jitter, a circuit breaker, safe correlation metadata, validation, and graceful fallback. That boundary can call an ElectriPy Python service later without changing authorization or application services. Raw documents, prompts, and extracted sensitive values are not emitted to telemetry.
+The application isolates runtime control behind `AiRuntimePort` and `AiGatewayPort`. The active TypeScript `ResilientAiRuntime` implements hard timeouts, transient-only bounded retries with jitter, a circuit breaker, safe error categorization, and aggregate token metadata. It is not ElectriPy and the repository does not claim that ElectriPy executes in Vercel. A supported ElectriPy Python service can be placed behind the runtime boundary later without changing authorization or application services. Raw documents, questions, prompts, answers, and protected values are not emitted to telemetry.
+
+## Ask Privato security sequence
+
+```mermaid
+flowchart LR
+  I[Trusted demo identity] --> A[Central authorization policy]
+  A --> R[Authorized structured + lexical retrieval]
+  R --> D[Recheck + selected-field boundary]
+  D --> E[Bounded evidence packets]
+  E --> O[OpenAI Responses API]
+  O --> C[Schema + citation validation]
+  C --> U[Safe response DTO]
+```
+
+The model never decides authorization. The server calculates authorized resource IDs first, retrieval is restricted to that set, and only selected authorized candidates cross the sensitive-field boundary. An empty relevant set returns the neutral no-answer response without invoking the answer model. Circle changes are read from a fresh server snapshot on each request, so effective access is revoked immediately.
+
+The active retriever uses deterministic structured and lexical scoring over household-scale, approved searchable metadata. Embeddings are intentionally not enabled: there is no unrestricted vector search, no duplicate plaintext chunk store, and no pgvector claim. The `AuthorizedRetrieverPort` can accept a tenant-scoped embedding adapter later if corpus size warrants it.
 
 ## Honest prototype security statement
 
 Privato is a security-minded prototype, not a production security certification. It does not claim HIPAA compliance, SOC 2 compliance, zero-knowledge encryption, or end-to-end encryption.
 
-Implemented controls include centralized server-side authorization, cross-household denial, owner-only Private resources, direct-route rechecks, authorization before any sensitive read boundary, server-only OpenAI calls, Zod input/output validation, upload limits and type checks, safe error messages, AES-256-GCM primitives, secure response headers, non-sensitive audit events, and authorization-filtered AI context.
+Implemented controls include centralized server-side authorization, cross-household denial, owner-only Private resources, direct-route rechecks, authorization before any sensitive read boundary, authorized-ID-scoped retrieval, server-only OpenAI calls with response storage disabled, Zod input/output validation, strict citation validation, a no-model fast path, upload limits and type checks, safe error messages, AES-256-GCM primitives, secure response headers, non-sensitive audit events, and safe aggregate AI-run records.
 
 ## Known limitations
 
 - The default golden path uses an in-process demo repository; state resets with the server and is not suitable for multiple instances.
 - Demo identity switching is explicitly a presentation feature, not production authentication.
+- Real Ask Privato answers require a server-side OpenAI key and configured model. The repository's deterministic AI fallback remains limited to the clearly labeled upload-extraction demo and never fabricates Ask answers.
+- Ask retrieval currently uses structured and lexical scoring rather than embeddings. It is appropriate for the tiny synthetic household corpus, not a large document collection.
+- AI-run telemetry is recorded in the active in-memory demo store. The Drizzle schema and migration define the PostgreSQL persistence target, but the Vercel demo does not claim durable AI-run storage without a configured database adapter.
 - Uploaded document bytes are validated and processed in memory, but the infrastructure-free demo stores only protected document metadata. Durable encrypted bytes require wiring `DocumentStoragePort` to PostgreSQL or object storage.
 - PostgreSQL migration and encrypted seed are included, but the default screens do not require a running database.
 - The fallback extractor produces stable synthetic fields for demonstration; configure OpenAI for document-aware extraction.

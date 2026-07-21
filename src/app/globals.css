@@ -432,6 +432,10 @@ textarea.field-control { min-height: 110px; padding-top: 12px; resize: vertical;
 .ask-mark { width: 48px; height: 48px; display: grid; place-items: center; border-radius: 15px; color: white; background: var(--maroon); box-shadow: 0 9px 20px rgb(75 24 52 / .16); }
 .ask-intro h2 { margin: 0; font-size: 20px; letter-spacing: -.03em; }
 .ask-intro p { margin: 4px 0 0; color: var(--muted); font-size: 11px; }
+.ask-identity-pill { display: flex; align-items: center; gap: 8px; margin-left: auto; padding: 8px 10px; border: 1px solid var(--line); border-radius: 11px; color: var(--maroon); background: #fbf7f4; }
+.ask-identity-pill > span { display: flex; flex-direction: column; gap: 1px; }
+.ask-identity-pill strong { color: var(--ink); font-size: 9px; }
+.ask-identity-pill small { color: var(--muted); font-size: 8px; }
 .ask-form { overflow: hidden; border: 1px solid #d5c8ce; border-radius: 15px; background: white; box-shadow: 0 4px 18px rgb(52 16 36 / .05); transition: border-color .18s ease, box-shadow .18s ease; }
 .ask-form:focus-within { border-color: var(--maroon); box-shadow: 0 0 0 3px var(--maroon-soft); }
 .ask-form textarea { width: 100%; min-height: 110px; display: block; padding: 16px; border: 0; outline: 0; color: var(--ink); background: transparent; resize: none; font-size: 13px; line-height: 1.5; }
@@ -468,8 +472,24 @@ textarea.field-control { min-height: 110px; padding-top: 12px; resize: vertical;
 .answer-citations a > span:nth-child(2) { display: flex; flex-direction: column; gap: 2px; }
 .answer-citations strong { font-size: 9px; }
 .answer-citations small { color: var(--muted); font-size: 8px; }
+.answer-citations em { margin-top: 2px; color: var(--muted); font-size: 8px; font-style: normal; line-height: 1.4; }
 .answer-citations a > svg { color: var(--faint); }
 .no-citations { display: flex; align-items: center; gap: 7px; padding-top: 14px; border-top: 1px solid #e6dbe0; color: var(--muted); font-size: 9px; }
+.answer-card-no_answer { border-color: #d7e4dd; background: #f8fbf9; }
+.answer-card-unavailable { border-color: #ead7dc; background: #fdf8f9; }
+.protection-trace { margin-top: 16px; border-top: 1px solid #e6dbe0; }
+.protection-trace summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 0 0; color: var(--maroon); cursor: pointer; list-style: none; font-size: 9px; font-weight: 700; }
+.protection-trace summary::-webkit-details-marker { display: none; }
+.protection-trace summary > span { display: inline-flex; align-items: center; gap: 7px; }
+.protection-trace summary > svg { transition: transform .18s ease; }
+.protection-trace[open] summary > svg { transform: rotate(180deg); }
+.protection-trace-body { margin-top: 12px; padding: 14px; border-radius: 11px; background: #f5f0ed; }
+.protection-trace-body > p { margin: 0 0 12px; color: var(--muted); font-size: 8px; line-height: 1.5; }
+.protection-trace dl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px 18px; margin: 0; }
+.protection-trace dl > div { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 7px 0; border-bottom: 1px solid #e4dad5; }
+.protection-trace dt { color: var(--muted); font-size: 8px; }
+.protection-trace dd { margin: 0; text-align: right; color: var(--ink); font-size: 8px; font-weight: 650; }
+.protection-trace code { font-size: 8px; }
 .ask-safety { display: flex; flex-direction: column; gap: 12px; }
 .safety-card { padding: 21px; }
 .safety-icon { width: 42px; height: 42px; display: grid; place-items: center; margin-bottom: 18px; border-radius: 13px; color: var(--success); background: var(--success-soft); }
@@ -491,12 +511,16 @@ textarea.field-control { min-height: 110px; padding-top: 12px; resize: vertical;
 
 @media (max-width: 680px) {
   .ask-workspace { padding: 20px; }
+  .ask-intro { align-items: flex-start; flex-wrap: wrap; }
+  .ask-identity-pill { width: 100%; margin-left: 62px; }
   .ask-form-footer { align-items: flex-start; flex-direction: column; }
   .ask-form-footer .primary-button { width: 100%; }
   .prompt-suggestions > div { grid-template-columns: 1fr; }
   .ask-safety { grid-template-columns: 1fr; }
   .answer-error { grid-template-columns: auto 1fr; }
   .answer-error button { grid-column: 1 / -1; }
+  .answer-label { align-items: flex-start; flex-direction: column; gap: 5px; }
+  .protection-trace dl { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 1040px) {

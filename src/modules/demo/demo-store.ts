@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import type { AuditEvent, CircleType, HouseholdSnapshot, Resource } from "@/modules/core/domain";
+import type { AiRunRecord, AuditEvent, CircleType, HouseholdSnapshot, Resource } from "@/modules/core/domain";
 import { demoAuditEvents, demoMembers, demoResources, DEMO_HOUSEHOLD_ID } from "@/modules/demo/seed";
 
 type DemoState = HouseholdSnapshot;
@@ -15,6 +15,7 @@ function freshState(): DemoState {
     members: structuredClone(demoMembers),
     resources: structuredClone(demoResources),
     auditEvents: structuredClone(demoAuditEvents),
+    aiRuns: [],
   };
 }
 
@@ -64,6 +65,12 @@ export function addDemoResource(resource: Resource, actorMemberId: string): void
 
 export function recordDemoAudit(event: Omit<AuditEvent, "id" | "createdAt">): void {
   state().auditEvents.unshift({ ...event, id: randomUUID(), createdAt: new Date().toISOString() });
+}
+
+export function recordDemoAiRun(run: Omit<AiRunRecord, "id" | "createdAt">): void {
+  const snapshot = state();
+  snapshot.aiRuns ??= [];
+  snapshot.aiRuns.unshift({ ...run, id: randomUUID(), createdAt: new Date().toISOString() });
 }
 
 export function resetDemoStore(): void {

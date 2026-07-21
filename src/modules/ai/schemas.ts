@@ -22,9 +22,26 @@ export const insuranceExtractionSchema = z.object({
 
 export type InsuranceExtraction = z.infer<typeof insuranceExtractionSchema>;
 
+export const askQuestionSchema = z.object({
+  question: z.string().trim().min(1).max(500),
+}).strict();
+
 export const assistantAnswerSchema = z.object({
-  answer: z.string().min(1).max(1500),
-  citationIds: z.array(z.string()).max(8),
+  answerable: z.boolean(),
+  answer: z.string().min(1).max(2000),
+  citations: z.array(z.object({
+    sourceId: z.string().min(1).max(20),
+    resourcePublicId: z.string().min(1).max(160),
+    reason: z.string().max(240).nullable(),
+  }).strict()).max(5),
+  confidence: z.enum(["high", "medium", "low"]),
+}).strict().superRefine((value, context) => {
+  if (!value.answerable && value.citations.length > 0) {
+    context.addIssue({ code: "custom", path: ["citations"], message: "Unanswerable results cannot include citations." });
+  }
+  if (value.answerable && value.citations.length === 0) {
+    context.addIssue({ code: "custom", path: ["citations"], message: "Answerable results require at least one citation." });
+  }
 });
 
 export type AssistantAnswer = z.infer<typeof assistantAnswerSchema>;

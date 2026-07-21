@@ -7,3 +7,10 @@ export function createAiGateway(): AiGatewayPort {
     ? new OpenAiGateway(process.env.OPENAI_API_KEY)
     : new DemoAiGateway();
 }
+
+/** Ask Privato never fabricates an answer when the live provider is unavailable. */
+export function createAskAiGateway(): AiGatewayPort | undefined {
+  return process.env.OPENAI_API_KEY
+    ? new OpenAiGateway(process.env.OPENAI_API_KEY)
+    : undefined;
+}

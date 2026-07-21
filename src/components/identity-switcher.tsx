@@ -21,6 +21,7 @@ export function IdentitySwitcher({ principal, members }: { principal: SessionPri
       body: JSON.stringify({ memberId }),
     });
     if (response.ok) {
+      window.localStorage.setItem("privato:session-revision", Date.now().toString());
       setOpen(false);
       router.refresh();
     }
