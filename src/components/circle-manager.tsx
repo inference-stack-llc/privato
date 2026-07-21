@@ -72,9 +72,16 @@ export function CircleManager({ initialMembers, resources, actorMemberId }: { in
         <section className="circle-visual-panel surface-card" aria-labelledby="trust-map-title">
           <div className="circle-panel-heading"><div><span className="page-kicker">Trust map</span><h2 id="trust-map-title">Closer means more trusted.</h2></div><span className="inheritance-pill"><ShieldCheck size={14} /> Access inherits outward</span></div>
           <div className="trust-map" aria-hidden="true">
-            <div className="trust-orbit trust-outer"><span className="orbit-label">Outer</span>{members.filter((member) => member.circle === "OUTER").map((member) => <div className="orbit-person outer-person" key={member.id}><MemberAvatar member={member} size="sm" /><small>{member.displayName.split(" ")[0]}</small></div>)}
-              <div className="trust-orbit trust-inner"><span className="orbit-label">Inner</span><div className="orbit-people inner-people">{members.filter((member) => member.circle === "INNER").map((member) => <div className="orbit-person" key={member.id}><MemberAvatar member={member} size="sm" /><small>{member.displayName.split(" ")[0]}</small></div>)}</div>
-                <div className="trust-orbit trust-core"><span className="orbit-label core-label">Core</span><div className="orbit-people">{members.filter((member) => member.circle === "CORE").map((member) => <div className="orbit-person" key={member.id}><MemberAvatar member={member} size="sm" /><small>{member.displayName.split(" ")[0]}</small></div>)}</div></div>
+            <div className="trust-orbit trust-outer">
+              <span className="orbit-label">Outer</span>
+              <div className="orbit-people outer-people">{members.filter((member) => member.circle === "OUTER").map((member) => <div className="orbit-person" key={member.id}><MemberAvatar member={member} size="sm" /><small>{member.displayName.split(" ")[0]}</small></div>)}</div>
+              <div className="trust-orbit trust-inner">
+                <span className="orbit-label">Inner</span>
+                <div className="orbit-people inner-people">{members.filter((member) => member.circle === "INNER").map((member) => <div className="orbit-person" key={member.id}><MemberAvatar member={member} size="sm" /><small>{member.displayName.split(" ")[0]}</small></div>)}</div>
+                <div className="trust-orbit trust-core">
+                  <span className="orbit-label core-label">Core</span>
+                  <div className="orbit-people core-people">{members.filter((member) => member.circle === "CORE").map((member) => <div className="orbit-person" key={member.id}><MemberAvatar member={member} size="sm" /><small>{member.displayName.split(" ")[0]}</small></div>)}</div>
+                </div>
               </div>
             </div>
           </div>
