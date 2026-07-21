@@ -42,9 +42,9 @@ export const demoResources: Resource[] = [
     expiresAt: "2026-11-30",
     fields: [
       { label: "Provider", value: "Northstar Mutual" },
-      { label: "Policy number", value: "AUTO-••••-4821", mask: true },
+      { label: "Policy number", value: "AUTO-DEMO-4821", mask: true },
       { label: "Covered vehicle", value: "2022 Honda CR-V" },
-      { label: "VIN", value: "••••••••••••6742", mask: true },
+      { label: "VIN", value: "1PRVT00D3M0006742", mask: true },
       { label: "Support", value: "(555) 010-0911" },
     ],
     document: { filename: "honda-insurance-card.pdf", mimeType: "application/pdf", sizeBytes: 184200 },
@@ -60,7 +60,7 @@ export const demoResources: Resource[] = [
     fields: [
       { label: "Provider", value: "Harbor Health Cooperative" },
       { label: "Plan", value: "Family Choice 250" },
-      { label: "Member ID", value: "HH-••••-1904", mask: true },
+      { label: "Member ID", value: "HH-DEMO-1904", mask: true },
       { label: "Group", value: "GRP-8042" },
       { label: "Member services", value: "(555) 010-2200" },
     ],
@@ -76,7 +76,7 @@ export const demoResources: Resource[] = [
     fields: [
       { label: "Provider", value: "Northstar Roadside" },
       { label: "24/7 number", value: "(555) 010-7722" },
-      { label: "Membership", value: "RS-••••-2218", mask: true },
+      { label: "Membership", value: "RS-DEMO-2218", mask: true },
       { label: "Coverage", value: "Towing up to 100 miles" },
     ],
   },
@@ -91,7 +91,7 @@ export const demoResources: Resource[] = [
     fields: [
       { label: "Vehicle", value: "2022 Honda CR-V" },
       { label: "Plate", value: "SYN-274" },
-      { label: "Registration ID", value: "CO-••••-6380", mask: true },
+      { label: "Registration ID", value: "CO-DEMO-6380", mask: true },
     ],
   },
   {
@@ -116,7 +116,7 @@ export const demoResources: Resource[] = [
     visibility: "PRIVATE",
     fields: [
       { label: "Primary institution", value: "Example Community Credit Union" },
-      { label: "Account reference", value: "•••• 0427", mask: true },
+      { label: "Account reference", value: "DEMO-ACCT-0427", mask: true },
       { label: "Advisor", value: "Demo contact · (555) 010-4400" },
     ],
   },
