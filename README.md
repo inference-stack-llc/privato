@@ -6,6 +6,11 @@ Privato is a private information network that helps families and close friends o
 
 This repository contains a polished Build Week MVP centered on a deterministic, relationship-aware access model: Core, Inner, and Outer Circles. The golden path demonstrates that authorized information is easy to find while restricted information is unavailable through vault browsing, pasted resource URLs, and Ask Privato.
 
+<p align="center">
+  <img src="docs/images/privato-responsive.png" alt="Privato running responsively on a laptop and mobile phone" width="1200" />
+</p>
+<p align="center"><sub><strong>One calm, permission-aware experience across desktop and mobile.</strong></sub></p>
+
 ## What is included
 
 - Calm, responsive entry page and household dashboard
@@ -20,6 +25,21 @@ This repository contains a polished Build Week MVP centered on a deterministic, 
 - Drizzle schema, SQL migration, and database seed
 - Timeout, transient retry, circuit breaker, correlation ID, safe metadata, and local AI fallback controls
 - Focused tests for authorization, decryption boundaries, encryption, structured AI output, and assistant context
+
+## Responsive by design
+
+Preparedness does not happen only at a desk. Privato is designed to remain clear and usable whether someone is organizing the household on a laptop or looking up an insurance card from a phone at the moment it is needed.
+
+<p align="center">
+  <img src="docs/images/privato-mobile-responsive.png" alt="Privato landing page and household dashboard shown on two mobile phones" width="960" />
+</p>
+<p align="center"><sub><strong>The same trust model, optimized for focused mobile actions and full desktop workflows.</strong></sub></p>
+
+- **Adaptive navigation:** the desktop sidebar becomes a persistent, thumb-friendly bottom navigation bar on smaller screens.
+- **Intentional reflow:** hero content, readiness metrics, resource cards, trust-circle panels, forms, and review surfaces stack without losing their visual hierarchy.
+- **Touch-ready controls:** primary actions retain generous targets, dialogs fit the viewport, and identity controls condense without hiding their purpose.
+- **Readable sensitive data:** resource details, masked values, audience information, and citations remain legible without horizontal scrolling.
+- **Consistent authorization:** responsive presentation never changes the underlying access policy; every device receives the same identity-aware filtering and protected-route checks.
 
 ## Architecture
 
